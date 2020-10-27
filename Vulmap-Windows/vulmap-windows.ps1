@@ -212,7 +212,7 @@ https://vulmon.com
         return $interests;
     }
     function Invoke-VulnerabilityScan() {
-        Write-Host 'Vulnerability scanning started...';
+        #Write-Host 'Vulnerability scanning started...';
         $inventory = ConvertFrom-Json($inventory_json);
 
         $vuln_list = @();
@@ -239,32 +239,37 @@ https://vulmon.com
         $http_param = '[' + $product_list + ']';
         $http_response = Get-Vulmon($http_param);
         $vuln_list += $http_response;
-        Write-Host "Checked $count items";
+        #Write-Host "Checked $count items";
 
         if ($vuln_list.Length -eq 0) {
-            Write-Host 'No vulnerabilities found';
+            #Write-Host 'No vulnerabilities found';
+            Write-Host "{`"count`" $vuln_count, \"vulns\": []}"
         } else {
             $vuln_count = $vuln_list.Length;
-            Write-Host "$vuln_count vulnerabilities found!";
-            $vuln_list | Format-Table -AutoSize;
+            #Write-Host "$vuln_count vulnerabilities found!";
+            #$vuln_list | Format-Table -AutoSize;
+            #Write-Host "My Modifications start here"
+            #Write-Host "------------------------------------------"
+            $new_vuln_list = $vuln_list | ConvertTo-Json -Compress
+            Write-Host "{`"count`" : $vuln_count, `"vulns`": ["  $new_vuln_list  "]}"
         }
     }
     function Get-Inventory{
         if ($ReadInventoryFile) {
             # read from file
-            Write-Host "Reading software inventory from $InventoryInFile...";
+            #Write-Host "Reading software inventory from $InventoryInFile...";
             $inventory_json = Get-Content -Encoding UTF8 -Path $InventoryInFile | Out-String;
         } else {
-            Write-Host "Collecting software inventory...";
+            #Write-Host "Collecting software inventory...";
             $inventory = Get-ProductList;
             $inventory_json = ConvertTo-JSON $inventory;
         }
-        Write-Host 'Software inventory collected';
+        #Write-Host 'Software inventory collected';
         return $inventory_json;
 
     }
     <#-----------------------------------------------------------[Execution]------------------------------------------------------------#>
-    Write-Host 'Vulmap started...';
+    #Write-Host 'Vulmap started...';
     if (!([string]::IsNullOrEmpty($DownloadExploit))) {
         "Downloading exploit...";
         Get-Exploit($DownloadExploit);
@@ -273,7 +278,7 @@ https://vulmon.com
         $inventory_json = Get-Inventory;
         # Save Inventory to File
         if (($SaveInventoryFile) -Or ($Mode -eq "CollectInventory")) {
-            Write-Host "Saving software inventory to $InventoryOutFile... ";
+            #Write-Host "Saving software inventory to $InventoryOutFile... ";
             $inventory_json | Out-File -Encoding UTF8 -FilePath $InventoryOutFile;
             }
 
@@ -282,7 +287,7 @@ https://vulmon.com
            invoke-VulnerabilityScan;
          }
     }
-    Write-Host 'Done.';
+    #Write-Host 'Done.';
 }
 
 Invoke-Vulmap;
